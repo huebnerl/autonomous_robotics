@@ -1,0 +1,7 @@
+#goal definition
+bool pump
+int16 robot_number
+---
+#result definition
+bool success
+---

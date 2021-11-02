@@ -1,0 +1,12 @@
+#goal definition
+int16 x
+int16 y
+int16 z
+int16 w
+int16 robot_number
+---
+#result definition
+bool success
+---
+#feedback
+#int32[] sequence
