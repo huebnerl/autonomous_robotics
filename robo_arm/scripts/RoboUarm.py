@@ -52,11 +52,6 @@ class RoboArm:
         rospy.sleep(10)
 
     def try_to_reach(self, data):
-        #self.pubReadyForNextStone.publish(True)
-        #return
-
-        ####
-
         moveClient = actionlib.SimpleActionClient('uarm_move', uarm_msgs.msg.uarm_move_dual_robotsAction)
         print("try to move arm")
         rospy.sleep(10)
