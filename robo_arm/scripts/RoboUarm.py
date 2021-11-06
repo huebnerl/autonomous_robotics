@@ -4,6 +4,8 @@ from __future__ import print_function
 from std_msgs.msg import Bool
 from RoboPoint import RoboPoint
 from RoboPoint import RoboMove
+from tf import TransformListener
+import tf
 import rospy
 
 # Brings in the SimpleActionClient
@@ -19,11 +21,24 @@ class RoboArm:
     def __init__(self, robo_number, robo_move):
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
+
+        # Arm Topics (Arm In , Arm Out)
         self.subTopic = '/sub_topic_robo_arm_' + str(robo_number)
         rospy.Subscriber(self.subTopic, Bool, self.move_a_stone)
 
         self.pubTopic = '/pub_topic_robo_arm_' + str(robo_number)
         self.pub = rospy.Publisher(self.pubTopic, Bool, queue_size=1)
+
+        # Turtle Topics
+        self.subTopicTurtle = '/pub_turtle_at_arm_' + str(robo_number)
+        rospy.Subscriber(self.subTopicTurtle, Bool, self.try_to_reach)
+
+        self.pubTopicTurtle = '/sub_turtle_fine_arm_' + str(robo_number)
+        self.pubTurtleFine = rospy.Publisher(self.pubTopicTurtle, Bool, queue_size=1)
+
+        # Conveyor Topic
+        self.pubTopicReadyForNextStone = '/pub_ready_for_stone_' + str(robo_number)
+        self.pubReadyForNextStone = rospy.Publisher(self.pubTopicReadyForNextStone, Bool, queue_size=1)
 
         self.robo_number = robo_number
         self.node_name = 'roboarm' + str(robo_number)
@@ -33,6 +48,48 @@ class RoboArm:
         self.point1 = robo_move.point1
         self.spoint2 = robo_move.spoint2
         self.point2 = robo_move.point2
+        self.tf_listener = TransformListener()
+        rospy.sleep(10)
+
+    def try_to_reach(self, data):
+        #self.pubReadyForNextStone.publish(True)
+        #return
+
+        ####
+
+        moveClient = actionlib.SimpleActionClient('uarm_move', uarm_msgs.msg.uarm_move_dual_robotsAction)
+        print("try to move arm")
+        rospy.sleep(10)
+        try:
+            (trans,rot) = self.tf_listener.lookupTransform('uarm2', 'base_link', rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            print("strange things happen")
+            self.pubTurtleFine.publish(True)
+            return
+
+        x = int(trans[0]*1000)+2
+        y = int(trans[1]*1000)+2
+        print(x)
+        print(y)
+        moveClient.wait_for_server()
+        goal = uarm_msgs.msg.uarm_move_dual_robotsGoal(x=x, y=y, z=172, w=0, robot_number=self.robo_number)
+        moveClient.send_goal(goal)
+        moveClient.wait_for_result()
+
+        result = uarm_msgs.msg.uarm_move_dual_robotsResult()
+        result = moveClient.get_result()
+
+        if result.success:
+            print("Here I want to drop :)")
+            self.point2.x = x
+            self.point2.y = y
+            self.spoint2.x = x
+            self.spoint2.y = y
+            self.pubReadyForNextStone.publish(True)
+        else:
+            print("Here I can not drop!")
+            self.pubTurtleFine.publish(True)
+
 
     def move_a_stone(self, data):
         print("lets move")

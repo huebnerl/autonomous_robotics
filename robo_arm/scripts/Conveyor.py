@@ -9,7 +9,7 @@ class Conveyor:
 
     def __init__(self):
         rospy.init_node('conveyorpy')
-        rospy.Subscriber('/pub_topic_robo_arm_1', Bool, self.start)
+        rospy.Subscriber('/pub_ready_for_stone_2', Bool, self.start)
         rospy.Subscriber('/conveyor1/state', ConveyorState, self.ready)
         self.pub = rospy.Publisher('/sub_topic_robo_arm_2', Bool, queue_size=1)
 
@@ -28,6 +28,7 @@ class Conveyor:
         rospy.wait_for_service('/conveyor1/move_forward')
         try:
             conveyor = rospy.ServiceProxy('/conveyor1/move_forward', Int16)
+            print("start conveyor")
             resp = conveyor(data=30)
             return resp.success
         except rospy.ServiceException as e:

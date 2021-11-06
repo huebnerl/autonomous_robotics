@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 
 from __future__ import print_function
 from RoboPoint import RoboPoint
@@ -9,8 +9,8 @@ import rospy
 
 if __name__ == '__main__':
     try:
-        spoint1 = RoboPoint(x=220, y=-40, z=174, w=90)
-        point1 = RoboPoint(x=220, y=-40, z=168, w=90)
+        spoint1 = RoboPoint(x=160, y=-160, z=174, w=90)
+        point1 = RoboPoint(x=160, y=-160, z=168, w=90)
         spoint2 = RoboPoint(x=110, y=160, z=168, w=60)
         point2 = RoboPoint(x=110, y=160, z=46, w=60)
         roboMove1 = RoboMove(spoint1, point1, spoint2, point2)
